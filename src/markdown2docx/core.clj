@@ -1,6 +1,7 @@
 (ns markdown2docx.core
   (:require [clojure.java.io :refer [file]]
             [clojure.string :as string])
+  (:use [endophile.core :only [mp to-clj html-string]])
   (:import [org.docx4j.openpackaging.packages WordprocessingMLPackage]
            [com.steadystate.css.parser CSSOMParser]
            [org.w3c.dom.css CSSStyleSheet CSSRuleList CSSRule CSSStyleRule CSSStyleDeclaration]
@@ -36,10 +37,12 @@
                first
                keyword)
         v (reduce merge
-            (map property-as-hash-map (.getProperties (.getStyle rule))))]
+            (map property-as-map (.getProperties (.getStyle rule))))]
     (assoc {} k v)))
 
-(defn parse-css [css]
+(defn parse-css
+  "Take a css file as an input and the return back the css as a hash map"
+  [css]
   (let [source (-> css-file
                    slurp
                    StringReader.
@@ -49,12 +52,19 @@
         rule-list (-> stylesheet
                       .getCssRules
                       .getRules)]
-    (reduce merge (map rule-as-hash-map rule-list))))
+    (reduce merge (map rule-as-map rule-list))))
+
+(defn parse-md
+  ""
+  [md]
+  (-> md
+      slurp
+      mp
+      to-clj))
 
 (defn -main [& args]
-  ;; (println (slurp md-file))
-  ;; (println (slurp css-file))
-  (parse-css css-file)
+  (clojure.pprint/pprint (parse-css css-file))
+  (clojure.pprint/pprint (parse-md md-file))
   ;; TODO: take in params: markdown, css, docx
   ;; TODO: read markdown, look for css ids / classes
   ;; TODO: read in css, match classes
