@@ -7,5 +7,6 @@
                  [org.docx4j/docx4j   "3.2.2"]
                  [net.sourceforge.cssparser/cssparser "0.9.18"]
                  [org.w3c.css/sac "1.3"]
-                 [endophile "0.1.2"]]
+                 [com.atlassian.commonmark/commonmark "0.4.1"]
+                 [com.atlassian.commonmark/commonmark-ext-gfm-tables "0.4.1"]]
   :main markdown2docx.core)
