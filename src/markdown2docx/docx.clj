@@ -20,6 +20,7 @@
 
 (defn save [package filename]
   (.save package (file filename)))
+
 (defn add-to
   [object content]
   (-> object
@@ -126,7 +127,6 @@
         t (.createText factory)
         ppr (.createPPr factory)
         ind (.createPPrBaseInd factory)]
-    ;(.setLeft ind (BigInteger/valueOf 720))
     (.setInd ppr ind)
     (.setPPr p ppr)
     (add-to r t)
