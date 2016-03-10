@@ -11,6 +11,12 @@
 
 (defonce factory (Context/getWmlObjectFactory))
 (defonce initialNumbering (slurp "initialNumbering.xml"))
+(defonce heading {1 "Title"
+                  2 "Heading1"
+                  3 "Heading2"
+                  4 "Heading3"
+                  5 "Heading4"
+                  6 "Heading5"})
 
 (defn create-package []
   (WordprocessingMLPackage/createPackage))
@@ -120,22 +126,26 @@
   [maindoc text]
   (.createParagraphOfText maindoc text))
 
+(defn add-style-heading
+  [p level]
+  (let [ppr (.getPPr p)
+        ppr-style (.createPPrBasePStyle factory)]
+    (.setPStyle ppr ppr-style)
+    (.setVal ppr-style (heading level))))
 
 (defn add-text
   [p text]
   (let [r (.createR factory)
-        t (.createText factory)
-        ppr (.createPPr factory)
-        ind (.createPPrBaseInd factory)]
-    (.setInd ppr ind)
-    (.setPPr p ppr)
+        t (.createText factory)]
     (add-to r t)
     (add-to p r)
     (.setValue t text)))
 
 (defn add-paragraph
   [maindoc]
-  (let [p (.createP factory)]
+  (let [p (.createP factory)
+        ppr (.createPPr factory)]
+    (.setPPr p ppr)
     (-> maindoc
         (.getJaxbElement)
         (.getBody)

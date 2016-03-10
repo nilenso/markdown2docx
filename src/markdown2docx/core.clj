@@ -33,7 +33,7 @@
   [stack val]
   (swap! stack conj val))
 
-(defn pop!
+(defn pop!!
   [stack]
   (swap! stack rest))
 
@@ -109,7 +109,7 @@
          (push stack table)
          (doseq [child (get-childern node)]
            (.visit (build-visitor) child))
-         (pop! stack))))
+         (pop!! stack))))
 
     (^void visit [this ^CustomNode node]
      (cond
@@ -118,13 +118,13 @@
                                     (push stack row)
                                     (doseq [child (get-childern node)]
                                       (.visit (build-visitor) child))
-                                    (pop! stack))
+                                    (pop!! stack))
        (same-type? TableCell node) (let [row (head stack)
                                          cell (docx/add-table-cell row)]
                                      (push stack cell)
                                      (doseq [child (get-childern node)]
                                        (.visit (build-visitor) child))
-                                     (pop! stack))
+                                     (pop!! stack))
        :else (doseq [child (get-childern node)]
                (.visit (build-visitor) child))))
 
@@ -134,15 +134,20 @@
 
     (^void visit [this ^Heading node]
      ;; TODO: Implement Heading
-     (doseq [child (get-childern node)]
-       (.visit (build-visitor)child)))
+     (let [lvl (.getLevel node)
+           p (docx/add-paragraph maindoc)]
+       (docx/add-style-heading p lvl)
+       (push stack p)
+       (doseq [child (get-childern node)]
+         (.visit (build-visitor)child))
+       (pop!! stack)))
 
     (^void visit [this ^Paragraph node]
      (let [p (docx/add-paragraph maindoc)]
        (push stack p)
        (doseq [child (get-childern node)]
          (.visit (build-visitor) child))
-       (pop! stack)))
+       (pop!! stack)))
 
     (^void visit [this ^ListItem node]
      (doseq [child (get-childern node)]
@@ -160,7 +165,7 @@
        (doseq [child (get-childern node)]
          (.visit (build-visitor) child))
        (adjust-list-ind-level ndp)
-       (pop! stack)))
+       (pop!! stack)))
 
     (^void visit [this ^Emphasis node]
      ;; TODO: Implelement Italic
