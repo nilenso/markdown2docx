@@ -143,7 +143,6 @@
        (.visit (build-visitor) child)))
 
     (^void visit [this ^Heading node]
-     ;; TODO: Implement Heading
      (let [lvl (.getLevel node)
            p (docx/add-paragraph maindoc)]
        (docx/add-style-heading p lvl)
@@ -178,12 +177,10 @@
        (pop!! stack)))
 
     (^void visit [this ^Emphasis node]
-     ;; TODO: Implelement Italic
      (doseq [child (get-childern node)]
        (.visit (build-visitor) child)))
 
     (^void visit [this ^StrongEmphasis node]
-     ;; TODO: Implement Bold text
      (doseq [child (get-childern node)]
        (.visit (build-visitor)  child)))
 
@@ -203,7 +200,6 @@
        (.visit (build-visitor) child)))
 
     (^void visit [this ^Text node]
-     ;; TODO: Implement Text styling
      (let [p (head stack)
            text (.getLiteral node)]
        (add-text node p text)))))

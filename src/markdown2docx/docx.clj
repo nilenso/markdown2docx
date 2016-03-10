@@ -4,7 +4,8 @@
            [org.docx4j XmlUtils]
            [org.docx4j.jaxb Context]
            [org.docx4j.openpackaging.parts.WordprocessingML NumberingDefinitionsPart]
-           [org.docx4j.wml Numbering P TcPr TblWidth TblPr CTBorder STBorder TblBorders]
+           [org.docx4j.wml Numbering P TcPr TblWidth TblPr CTBorder STBorder TblBorders
+            JcEnumeration]
            [org.docx4j.wml.PPrBase.NumPr]
            [java.math BigInteger]))
 
@@ -119,8 +120,12 @@
 
 (defn add-table
   [maindoc]
-  (let [table (.createTbl factory)]
-    (add-border table)
+  (let [table (.createTbl factory)
+        tblpr (.createTblPr factory)
+        jc (.createJc factory)]
+    (.setVal jc JcEnumeration/CENTER)
+    (.setJc tblpr jc)
+    (.setTblPr table tblpr)
     (.addObject maindoc table)
     table))
 
