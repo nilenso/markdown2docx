@@ -16,7 +16,9 @@
                   3 "Heading2"
                   4 "Heading3"
                   5 "Heading4"
-                  6 "Heading5"})
+                  6 "Heading5"}) ;; No Heading5 for docx -> This would just be normal text.
+(defonce emphasis-type {:bold #(.setB %1 %2)
+                        :italic #(.setI %1 %2)})
 
 (defn create-package []
   (WordprocessingMLPackage/createPackage))
@@ -133,12 +135,27 @@
     (.setPStyle ppr ppr-style)
     (.setVal ppr-style (heading level))))
 
+(defn add-emphasis-text
+  [p emphasis text]
+  (let [r (.createR factory)
+        rpr (.createRPr factory)
+        t (.createText factory)
+        b (new org.docx4j.wml.BooleanDefaultTrue)]
+    (.setVal b true)
+    ((emphasis emphasis-type) rpr b)
+    (.setRPr r rpr)
+    (add-to r t)
+    (add-to p r)
+    (.setSpace t "preserve")
+    (.setValue t text)))
+
 (defn add-text
   [p text]
   (let [r (.createR factory)
         t (.createText factory)]
     (add-to r t)
     (add-to p r)
+    (.setSpace t "preserve")
     (.setValue t text)))
 
 (defn add-paragraph

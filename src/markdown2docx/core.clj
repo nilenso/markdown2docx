@@ -100,6 +100,16 @@
   [node]
   (.getParent (.getParent node)))
 
+(defn add-text
+  [node p text]
+  (let [parent (.getParent node)
+        grand-parent (get-grand-parent node)]
+    (cond
+      (same-type? ListItem grand-parent) (docx/add-text-list p @numid @ilvl text)
+      (same-type? StrongEmphasis parent) (docx/add-emphasis-text p :bold text)
+      (same-type? Emphasis parent) (docx/add-emphasis-text p :italic text)
+      :else (docx/add-text p text))))
+
 (defn build-visitor []
   (reify Visitor
 
@@ -196,9 +206,7 @@
      ;; TODO: Implement Text styling
      (let [p (head stack)
            text (.getLiteral node)]
-       (if (same-type? ListItem (get-grand-parent node))
-         (docx/add-text-list p @numid @ilvl text)
-         (docx/add-text p text))))))
+       (add-text node p text)))))
 
 (defn parse-md-common
   [s]
