@@ -17,7 +17,7 @@
                   3 "Heading2"
                   4 "Heading3"
                   5 "Heading4"
-                  6 "Heading5"}) ;; No Heading5 for docx -> This would just be normal text.
+                  6 "Heading5"})
 (defonce emphasis-type {:bold #(.setB %1 %2)
                         :italic #(.setI %1 %2)})
 
