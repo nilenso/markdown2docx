@@ -3,7 +3,7 @@
   (:import [org.docx4j.openpackaging.packages WordprocessingMLPackage]
            [org.docx4j XmlUtils]
            [org.docx4j.jaxb Context]
-           [org.docx4j.openpackaging.parts.WordprocessingML NumberingDefinitionsPart]
+           [org.docx4j.openpackaging.parts.WordprocessingML NumberingDefinitionsPart FooterPart]
            [org.docx4j.wml Numbering P TcPr TblWidth TblPr CTBorder STBorder TblBorders
             JcEnumeration]
            [org.docx4j.wml.PPrBase.NumPr]
@@ -174,3 +174,78 @@
         (.getContent)
         (.add p))
     p))
+
+(defn add-pagenumber-field
+  [p]
+  (let [r (.createR factory)
+        txt (.createText factory)]
+    (doto txt
+      (.setSpace "preserve")
+      (.setValue " PAGE   \\* MERGEFORMAT "))
+    (add-to r (.createRInstrText factory txt))
+    (add-to p r)))
+
+(defn add-field-begin
+  [p]
+  (let [r (.createR factory)
+        fldchar (.createFldChar factory)]
+    (.setFldCharType fldchar org.docx4j.wml.STFldCharType/BEGIN)
+    (add-to r fldchar)
+    (add-to p r)))
+
+(defn add-field-end
+  [p]
+  (let [r (.createR factory)
+        fldchar (.createFldChar factory)]
+    (.setFldCharType fldchar org.docx4j.wml.STFldCharType/END)
+    (add-to r fldchar)
+    (add-to p r)))
+
+(defn create-footer-with-page-num
+  []
+  (let [ftr (.createFtr factory)
+        p (.createP factory)]
+    (add-field-begin p)
+    (add-pagenumber-field p)
+    (add-field-end p)
+    (add-to ftr p)
+    ftr))
+
+(defn get-section-pr
+  [sections]
+  (-> sections
+      (.get (dec (.size sections)))
+      (.getSectPr)))
+
+(defn set-section-pr
+  [sections sectpr]
+  (-> sections
+      (.get (dec (.size sections)))
+      (.setSectPr sectpr)))
+
+(defn create-footer-part
+  [package]
+  (let [footer-part (new FooterPart)]
+    (.setPackage footer-part package)
+    (.setJaxbElement footer-part (create-footer-with-page-num))
+    (.addTargetPart (maindoc package) footer-part)))
+
+(defn create-footer-reference
+  [package relationship]
+  (let [footer-reference (.createFooterReference factory)
+        sections (-> package
+                     (.getDocumentModel)
+                     (.getSections))
+        sectpr (get-section-pr sections)
+        newsectpr (if (nil? sectpr)
+                    (do
+                      (.createSectPr factory)
+                      (.addObject (maindoc package) sectpr)
+                      (set-section-pr sections sectpr))
+                    sectpr)]
+    (doto footer-reference
+      (.setId (.getId relationship))
+      (.setType org.docx4j.wml.HdrFtrRef/DEFAULT))
+    (-> newsectpr
+        (.getEGHdrFtrReferences)
+        (.add footer-reference))))

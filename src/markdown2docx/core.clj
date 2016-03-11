@@ -211,5 +211,7 @@
     (.visit (build-visitor) tree)))
 
 (defn -main [& args]
-  (parse-md-common (slurp md-file))
-  (docx/save package docx-file))
+  (let [footer-part (docx/create-footer-part package)]
+    (docx/create-footer-reference package footer-part)
+   (parse-md-common (slurp md-file))
+   (docx/save package docx-file)))
