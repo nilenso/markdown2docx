@@ -15,105 +15,119 @@
   (swap! ilvl dec))
 
 (defn document
-  [content maindoc]
-  (doseq [child content]
-    ((visit child) maindoc)))
+  [content maindoc parent]
+  (let [traversed (conj parent :document)]
+    (doseq [child content]
+     ((visit child) maindoc traversed))))
 
 (defn heading
-  [content maindoc]
+  [content maindoc parent]
   (let [lvl (-> content
                 first
                 :lvl)
-        p (docx/add-paragraph maindoc)]
+        p (docx/add-paragraph maindoc)
+        traversed (conj parent :heading)]
        (docx/add-style-heading p lvl)
        (doseq [child  (rest content)]
-         ((visit child) p))))
+         ((visit child) p traversed))))
 
 (defn paragraph
-  [content maindoc & parent]
-  (let [p (docx/add-paragraph maindoc)]
+  [content maindoc parent]
+  (let [p (docx/add-paragraph maindoc)
+        traversed (conj parent :paragraph)]
     (doseq [child content]
-      ((visit child) p parent))))
+      ((visit child) p traversed))))
 
 (defn table
-  [content maindoc]
-  (let [table (docx/add-table maindoc)]
+  [content maindoc parent]
+  (let [table (docx/add-table maindoc)
+        traversed (conj parent :table)]
     (doseq [child content]
-      ((visit child) table))))
+      ((visit child) table traversed))))
 
 (defn table-head
-  [content table]
-  (doseq [child content]
-    ((visit child) table)))
+  [content table parent]
+  (let [traversed (conj parent :table-head)]
+    (doseq [child content]
+      ((visit child) table traversed))))
 
 (defn table-body
-  [content table]
-  (doseq [child content]
-    ((visit child) table)))
+  [content table parent]
+  (let [traversed (conj parent :table-body)]
+    (doseq [child content]
+      ((visit child) table traversed))))
 
 (defn table-row
-  [content table]
-  (let [row (docx/add-table-row table)]
+  [content table parent]
+  (let [row (docx/add-table-row table)
+        traversed (conj parent :table-row)]
     (doseq [child content]
-      ((visit child) row))))
+      ((visit child) row traversed))))
 
 (defn table-cell
-  [content row]
-  (let [cell (docx/add-table-cell row)]
+  [content row parent]
+  (let [cell (docx/add-table-cell row)
+        traversed (conj parent :table-cell)]
     (doseq [child content]
-      ((visit child) cell))))
+      ((visit child) cell traversed))))
 
 (defn ordered-list
-  [content maindoc & parent]
-  (let [ndp (docx/add-ordered-list maindoc)]
+  [content maindoc parent]
+  (let [ndp (docx/add-ordered-list maindoc)
+        traversed (conj parent :ordered-list)]
     (swap! ilvl inc)
     (doseq [child content]
-      ((visit child) maindoc))
+      ((visit child) maindoc traversed))
     (adjust-list-ind-level ndp)))
 
 (defn bullet-list
-  [content maindoc & parent]
-  (doseq [child content]
-    ((visit child) maindoc)))
+  [content maindoc parent]
+  (let [traversed (conj parent :bullet-list)]
+    (doseq [child content]
+      ((visit child) maindoc traversed))))
 
 (defn list-item
-  [content maindoc & parent]
-  (doseq [child content]
-    ((visit child) maindoc :list-item)))
+  [content maindoc parent]
+  (let [traversed (conj parent :list-item)]
+    (doseq [child content]
+      ((visit child) maindoc traversed))))
 
 (defn hard-line-break
-  [content p & parent]
-  (doseq [child content]
-    ((visit child) p)))
+  [content p parent]
+  (let [traversed (conj parent :hard-line-break)]
+    (doseq [child content]
+      ((visit child) p traversed))))
 
 (defn thematic-break
-  [content p & parent]
-  (doseq [child content]
-    ((visit child) p)))
+  [content p parent]
+  (let [traversed (conj parent :thematic-break)]
+   (doseq [child content]
+     ((visit child) p traversed))))
 
 (defn soft-line-break
-  [content p & parent]
-  (doseq [child content]
-    ((visit child) p)))
+  [content p parent]
+  (let [traversed (conj parent :soft-line-break)]
+    (doseq [child content]
+      ((visit child) p traversed))))
 
 (defn bold
-  [content p & parent]
+  [content p parent]
   (docx/add-emphasis-text p :bold (-> content
                                       first
                                       :text)))
 
-
 (defn italic
-  [content p & parent]
+  [content p parent]
   (docx/add-emphasis-text p :italic (-> content
                                         first
                                         :text)))
 
 (defn text
-  [content p & parent]
-  (if (nil? parent)
-    (docx/add-text p content)
-    (docx/add-text-list p @numid @ilvl content)))
+  [content p parent]
+  (println parent)
+  (if (= :list-item (second parent))
+    (docx/add-text-list p @numid @ilvl content)
+    (docx/add-text p content)))
 
 (defn visit
   [element]
@@ -140,7 +154,8 @@
 
 (defn build-docx
   [maindoc md-map]
-  ((visit md-map) maindoc))
+  (let [root-node '(:package)]
+    ((visit md-map) maindoc root-node)))
 
 (defn md2docx
   [docx-file md-map]
