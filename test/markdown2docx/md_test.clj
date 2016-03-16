@@ -34,8 +34,7 @@
       (is (= table-clj (parse table-md))))))
 
 (deftest parse-heading
-  (let [get-lvl #(-> % :document first :heading first :lvl)
-        get-heading #(-> % :document first :heading second :text)]
+  (let [get-lvl #(-> % :document first :heading first :lvl)]
 
     (testing "parse returns a representative map"
       (is (= {:document [{:heading [{:lvl 1}
@@ -43,7 +42,7 @@
              (parse "# Heading"))))
 
     (testing "parse correctly identifies a level 1 heading"
-      (is (= 1 (get-lvl (parse h1)))))
+      (is (= 1 (get-lvl (parse "# Heading")))))
 
     ;; TODO: extract the remaining testing blocks
     (testing "GIVEN <some-precondition> WHEN <something-happens> THEN <should-be-result>"
@@ -52,7 +51,6 @@
             h4 "#### This is even smaller"
             h5 "##### A little bit smaller"
             h6 "###### smallest heading, hopefully"]
-        (is (= "Heading" (get-heading (parse h1))))
         (is (= 2 (get-lvl (parse h2))))
         (is (= 3 (get-lvl (parse h3))))
         (is (= 4 (get-lvl (parse h4))))
