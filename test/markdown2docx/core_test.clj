@@ -31,27 +31,33 @@
                            [{:table-cell [{:text "zebra stripes"}]}
                             {:table-cell [{:text "are neat"}]}
                             {:table-cell [{:text "$1"}]}]}]}]}]}]
-      (is (= (parse table-md) table-clj)))))
+      (is (= table-clj (parse table-md))))))
 
 (deftest parse-heading
-  (testing "parese heading"
-    (let [h1 "# Heading"
-          h2 "## Smaller Heading"
-          h3 "### Even smaller Heading ?"
-          h4 "#### This is even smaller"
-          h5 "##### A little bit smaller"
-          h6 "###### smallest heading, hopefully"
-          get-lvl #(-> % :document first :heading first :lvl)
-          get-heading #(-> % :document first :heading second :text)]
-      (is (= (parse h1) {:document [{:heading [{:lvl 1}
-                                               {:text "Heading"}]}]}))
-      (is (= "Heading" (get-heading (parse h1))))
-      (is (= 1 (get-lvl (parse h1))))
-      (is (= 2 (get-lvl (parse h2))))
-      (is (= 3 (get-lvl (parse h3))))
-      (is (= 4 (get-lvl (parse h4))))
-      (is (= 5 (get-lvl (parse h5))))
-      (is (= 6 (get-lvl (parse h6)))))))
+  (let [get-lvl #(-> % :document first :heading first :lvl)
+        get-heading #(-> % :document first :heading second :text)]
+
+    (testing "parse returns a representative map"
+      (is (= {:document [{:heading [{:lvl 1}
+                                    {:text "Heading"}]}]}
+             (parse "# Heading"))))
+
+    (testing "parse correctly identifies a level 1 heading"
+      (is (= 1 (get-lvl (parse h1)))))
+
+    ;; TODO: extract the remaining testing blocks
+    (testing "GIVEN <some-precondition> WHEN <something-happens> THEN <should-be-result>"
+      (let [h2 "## Smaller Heading"
+            h3 "### Even smaller Heading ?"
+            h4 "#### This is even smaller"
+            h5 "##### A little bit smaller"
+            h6 "###### smallest heading, hopefully"]
+        (is (= "Heading" (get-heading (parse h1))))
+        (is (= 2 (get-lvl (parse h2))))
+        (is (= 3 (get-lvl (parse h3))))
+        (is (= 4 (get-lvl (parse h4))))
+        (is (= 5 (get-lvl (parse h5))))
+        (is (= 6 (get-lvl (parse h6))))))))
 
 (deftest parse-emphasis
   (testing "parse bold"
@@ -85,14 +91,14 @@
   (testing "test ordered list"
     (let [quotes "1. May the Force be with you
   2. I find your lack of faith disturbing.
-  3. I¡¯ve got a very bad feeling about this.
+  3. I've got a very bad feeling about this.
   4. Never tell me the odds!
   5. Truly wonderful, the mind of a child is."
           quotes-clj {:document
                       [{:ordered-list
                         [{:list-item [{:paragraph [{:text "May the Force be with you"}]}]}
                          {:list-item [{:paragraph [{:text "I find your lack of faith disturbing."}]}]}
-                         {:list-item [{:paragraph [{:text "I¡¯ve got a very bad feeling about this."}]}]}
+                         {:list-item [{:paragraph [{:text "I've got a very bad feeling about this."}]}]}
                          {:list-item [{:paragraph [{:text "Never tell me the odds!"}]}]}
                          {:list-item [{:paragraph [{:text "Truly wonderful, the mind of a child is."}]}]}]}]}]
       (is (= quotes-clj (parse quotes)))))
