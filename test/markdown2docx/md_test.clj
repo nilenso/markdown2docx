@@ -1,4 +1,4 @@
-(ns markdown2docx.core-test
+(ns markdown2docx.md-test
   (:require [clojure.test :refer :all]
             [markdown2docx.md :refer :all]))
 
