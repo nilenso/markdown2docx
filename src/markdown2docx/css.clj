@@ -17,13 +17,27 @@
   (let [k  (-> rule
                .getSelectors
                .getSelectors
+               ;; HACK: transforming a list into a string to split it immediately is not semantically sound
                (->> (clojure.string/join " "))
                (clojure.string/split #"\s+")
                first
                keyword)
         v (reduce merge
             (map property-as-map (.getProperties (.getStyle rule))))]
-    (assoc {} k v)))
+    {k v}))
+
+(defn rule-as-map-hack-alterative [rule]
+  ;; HACK: the entire thread below is kind of a hack -- it's okay because we have a really specific use case
+  ;;       and we're not implementing all of the CSS spec (or even comprehensively approaching a portion of it)
+  (let [k  (-> rule
+               .getSelectors ;; returns SelectorListImpl
+               .getSelectors ;; returns a List<Selector>
+               first
+               .toString
+               keyword)
+        v (reduce merge
+            (map property-as-map (.getProperties (.getStyle rule))))]
+    {k v}))
 
 (defn parse-css
   "Take a css file as an input and the return back the css as a hash map"
