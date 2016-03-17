@@ -44,18 +44,20 @@
     (testing "parse correctly identifies a level 1 heading"
       (is (= 1 (get-lvl (parse "# Heading")))))
 
-    ;; TODO: extract the remaining testing blocks
-    (testing "GIVEN <some-precondition> WHEN <something-happens> THEN <should-be-result>"
-      (let [h2 "## Smaller Heading"
-            h3 "### Even smaller Heading ?"
-            h4 "#### This is even smaller"
-            h5 "##### A little bit smaller"
-            h6 "###### smallest heading, hopefully"]
-        (is (= 2 (get-lvl (parse h2))))
-        (is (= 3 (get-lvl (parse h3))))
-        (is (= 4 (get-lvl (parse h4))))
-        (is (= 5 (get-lvl (parse h5))))
-        (is (= 6 (get-lvl (parse h6))))))))
+    (testing "parse correctly identifies a level 2 heading"
+      (is (= 2 (get-lvl (parse "## Smaller Heading")))))
+
+    (testing "parse correctly identifies a level 3 heading"
+      (is (= 3 (get-lvl (parse "### Even smaller Heading ?")))))
+
+    (testing "parse correctly identifies a level 4 heading"
+      (is (= 4 (get-lvl (parse "#### This is even smaller")))))
+
+    (testing "parse correctly identifies a level 5 heading"
+      (is (= 5 (get-lvl (parse "##### A little bit smaller")))))
+
+    (testing "parse correctly identifies a level 6 heading"
+      (is (= 6 (get-lvl (parse "###### smallest heading, hopefully")))))))
 
 (deftest parse-emphasis
   (testing "parse bold"
