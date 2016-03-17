@@ -28,7 +28,9 @@
   (.getMainDocumentPart package))
 
 (defn save [package filename]
-  (.save package (file filename)))
+  (let [docx (file filename)]
+    (.save package docx)
+    docx))
 
 (defn add-to
   [object content]
