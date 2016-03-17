@@ -5,4 +5,5 @@
 (defn -main [& [md-file docx-file]]
   (let [md-string (slurp md-file)
         md-map (md/parse md-string)]
-    (docx-writer/write docx-file md-map)))
+    (when (.exists (docx-writer/write docx-file md-map))
+      (println "The docx file has been created @ " docx-file))))
