@@ -5,12 +5,11 @@
 ;; recursively call `visit`
 (declare visit)
 
-;; TODO: make this entire namespace non-stateful
+;; Maitinging atoms as the entire namespace deals explicitly with a mutable object and changes need to cascade laterally, not just down the tree.
 (defonce numid (atom 1))
 (defonce ilvl (atom -1))
 
-;; TODO: rename this to: `defn reset-list`
-(defn adjust-list-ind-level
+(defn reset-list
   [ndp]
   (when (= 0 @ilvl)
     (swap! numid (docx/restart-numbering ndp)))
@@ -80,7 +79,7 @@
     (swap! ilvl inc)
     (doseq [child content]
       ((visit child) maindoc traversed))
-    (adjust-list-ind-level ndp)))
+    (reset-list ndp)))
 
 (defn bullet-list
   [content maindoc parent]
