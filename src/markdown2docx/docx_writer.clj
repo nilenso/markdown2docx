@@ -22,7 +22,7 @@
      ((visit child) maindoc traversed))))
 
 (defn heading
-  [content maindoc parent ilvl]
+  [content maindoc parent]
   (let [lvl (-> content
                 first
                 :lvl)
@@ -30,7 +30,7 @@
         traversed (conj parent :heading)]
     (docx/add-style-heading p lvl)
     (doseq [child  (rest content)]
-      ((visit child) p traversed ilvl))))
+      ((visit child) p traversed))))
 
 (defn paragraph
   [content maindoc parent]
@@ -125,7 +125,6 @@
 
 (defn text
   [content p parent]
-  (println parent)
   (if (= :list-item (second parent))
     (docx/add-text-list p @numid @ilvl content)
     (docx/add-text p content)))
