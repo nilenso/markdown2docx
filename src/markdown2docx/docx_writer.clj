@@ -25,7 +25,7 @@
   [content maindoc parent]
   (let [lvl (-> content
                 first
-                :lvl)
+                :level)
         p (docx/add-paragraph maindoc)
         traversed (conj parent :heading)]
     (docx/add-style-heading p lvl)

@@ -6,7 +6,7 @@
 (deftest smoke-test
   (testing "write creates a valid file"
     (let [document {:document
-                    [{:heading [{:lvl 1} {:text "H1"}]}
+                    [{:heading [{:level 1} {:text "H1"}]}
                      {:paragraph
                       [{:text "Emphasis, aka italics, with "}
                        {:italic [{:text "asterisks"}]}
