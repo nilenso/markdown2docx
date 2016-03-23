@@ -20,6 +20,9 @@
                   6 "Heading5"})
 (defonce emphasis-type {:bold #(.setB %1 %2)
                         :italic #(.setI %1 %2)})
+(defonce alignment {:center JcEnumeration/CENTER
+                    :left JcEnumeration/LEFT
+                    :right JcEnumeration/RIGHT})
 
 (defn create-package []
   (WordprocessingMLPackage/createPackage))
@@ -156,10 +159,33 @@
     (.setSpace t "preserve")
     (.setValue t text)))
 
-(defn add-text
+(defn add-bold-italic-text
   [p text]
   (let [r (.createR factory)
-        t (.createText factory)]
+        rpr (.createRPr factory)
+        t (.createText factory)
+        b (new org.docx4j.wml.BooleanDefaultTrue)]
+    (.setVal b true)
+    (.setB rpr b)
+    (.setI rpr b)
+    (.setRPr r rpr)
+    (add-to r t)
+    (add-to p r)
+    (.setSpace t "preserve")
+    (.setValue t text)))
+
+(defn add-text-align
+  [p align]
+  (let [ppr (or (.getPPr p) (.createPPr factory))
+        jc (.createJc factory)]
+    (.setVal jc (align alignment))
+    (.setJc ppr jc)
+    (.setPPr p ppr)))
+
+(defn add-text
+  [p text]
+  (let [t (.createText factory)
+        r (.createR factory)]
     (add-to r t)
     (add-to p r)
     (.setSpace t "preserve")
