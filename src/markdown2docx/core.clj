@@ -1,5 +1,5 @@
 (ns markdown2docx.core
-  (:require [markdown2docx.md :as md]
+  (:require [markdown2clj.core :as md]
             [markdown2docx.docx-writer :as docx-writer]))
 
 (defn -main [& [md-file docx-file]]
