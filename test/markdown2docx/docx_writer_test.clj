@@ -5,8 +5,9 @@
 
 (deftest smoke-test
   (testing "write creates a valid file"
-    (let [document {:document
-                    [{:heading [{:level 1} {:text "H1"}]}
+    (let [css {:.title {:text-align "center"}}
+          document {:document
+                    [{:heading [{:level 1} {:text "H1 {.title}"}]}
                      {:paragraph
                       [{:text "Emphasis, aka italics, with "}
                        {:italic [{:text "asterisks"}]}
@@ -43,4 +44,4 @@
                           [{:table-cell [{:text "1"}]}
                            {:table-cell [{:text "2"}]}
                            {:table-cell [{:text "3"}]}]}]}]}]}]
-      (is (= true (.exists (write "sample.docx" document)))))))
+      (is (= true (.exists (write "sample.docx" document css)))))))

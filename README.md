@@ -7,4 +7,4 @@ Java/Clojure implementation of a Markdown => Word (.docx) converter
 - code refactoring
 
 To run the tool
-`lein run <path-to-md-file> <path-to-docx-file>`
+`lein run <path-to-md-file> <path-to-docx-file> <path-to-css-file>`
