@@ -12,14 +12,16 @@
 
 (defonce factory (Context/getWmlObjectFactory))
 (defonce initialNumbering (slurp "initialNumbering.xml"))
-(defonce heading {1 "Title"
-                  2 "Heading1"
-                  3 "Heading2"
-                  4 "Heading3"
-                  5 "Heading4"
-                  6 "Heading5"})
+(defonce heading {1 "Heading1"
+                  2 "Heading2"
+                  3 "Heading3"
+                  4 "Heading4"
+                  5 "Heading5"
+                  6 "Heading6"})
+
 (defonce emphasis-type {:bold #(.setB %1 %2)
                         :italic #(.setI %1 %2)})
+
 (defonce alignment {:center JcEnumeration/CENTER
                     :left JcEnumeration/LEFT
                     :right JcEnumeration/RIGHT})
@@ -45,31 +47,6 @@
   [ndp]
   (fn [_]
     (.restart ndp 1 0 1)))
-
-(defn add-text-list
-  [p numid ilvl text]
-  (let [t (.createText factory)
-        run (.createR factory)
-        ppr (.createPPr factory)
-        numpr (.createPPrBaseNumPr factory)
-        ilvlelement (.createPPrBaseNumPrIlvl factory)
-        numidelement (.createPPrBaseNumPrNumId factory)]
-    (.setValue t text)
-    (add-to run t)
-    (add-to p run)
-    (.setPPr p ppr)
-    (.setNumPr ppr numpr)
-    (.setIlvl numpr ilvlelement)
-    (.setVal ilvlelement (BigInteger/valueOf ilvl))
-    (.setNumId numpr numidelement)
-    (.setVal numidelement (BigInteger/valueOf numid))))
-
-(defn add-ordered-list
-  [maindoc]
-  (let [ndp (new NumberingDefinitionsPart)]
-    (.addTargetPart maindoc ndp)
-    (.setJaxbElement ndp (XmlUtils/unmarshalString initialNumbering))
-    ndp))
 
 (defn set-border
   [border]
@@ -109,91 +86,117 @@
     (.setTcPr tablecell table-cell-properties)))
 
 (defn add-table-cell
-  [row]
-  (let [cell (.createTc factory)
-        p (.createP factory)]
+  [doc]
+  (let [row (:row doc)
+        cell (.createTc factory)
+        p (.createP factory)
+        r (.createR factory)
+        rpr (.createRPr factory)
+        ppr (.createPPr factory)]
+    (.setPPr p ppr)
+    (.setRPr r rpr)
+    (add-to p r)
     (add-to cell p)
-    (set-cell-width cell 2500)
+    (set-cell-width cell 5500)
     (add-to row cell)
-    p))
+    (assoc doc :p p :r r :rpr rpr :ppr ppr)))
 
 (defn add-table-row
-  [table]
-  (let [row (.createTr factory)]
+  [doc]
+  (let [table (:table doc)
+        row (.createTr factory)]
     (add-to table row)
-    row))
+    (assoc doc :row row)))
 
 (defn add-table
-  [maindoc]
-  (let [table (.createTbl factory)
+  [doc]
+  (let [maindoc (:maindoc doc)
+        table (.createTbl factory)
         tblpr (.createTblPr factory)
         jc (.createJc factory)]
     (.setVal jc JcEnumeration/CENTER)
     (.setJc tblpr jc)
     (.setTblPr table tblpr)
     (.addObject maindoc table)
-    table))
+    (assoc doc :table table)))
 
 (defn add-simple-paragraph
   [maindoc text]
   (.createParagraphOfText maindoc text))
 
 (defn add-style-heading
-  [p level]
-  (let [ppr (.getPPr p)
+  [doc level]
+  (let [ppr (:ppr doc)
         ppr-style (.createPPrBasePStyle factory)]
     (.setPStyle ppr ppr-style)
     (.setVal ppr-style (heading level))))
 
-(defn add-emphasis-text
-  [p emphasis text]
+(defn add-ordered-list
+  [doc]
+  (let [ndp (new NumberingDefinitionsPart)
+        maindoc (:maindoc doc)]
+    (.addTargetPart maindoc ndp)
+    (.setJaxbElement ndp (XmlUtils/unmarshalString initialNumbering))
+    (assoc doc :ndp ndp)))
+
+(defn add-text-list
+  [doc numid ilvl]
+  (let [ppr (:ppr doc)
+        numpr (.createPPrBaseNumPr factory)
+        ilvlelement (.createPPrBaseNumPrIlvl factory)
+        numidelement (.createPPrBaseNumPrNumId factory)]
+    (.setNumPr ppr numpr)
+    (.setIlvl numpr ilvlelement)
+    (.setVal ilvlelement (BigInteger/valueOf ilvl))
+    (.setNumId numpr numidelement)
+    (.setVal numidelement (BigInteger/valueOf numid))))
+
+(defn set-emphasis-text
+  [doc emphasis]
   (let [r (.createR factory)
+        p (:p doc)
         rpr (.createRPr factory)
-        t (.createText factory)
         b (new org.docx4j.wml.BooleanDefaultTrue)]
     (.setVal b true)
     ((emphasis emphasis-type) rpr b)
     (.setRPr r rpr)
-    (add-to r t)
     (add-to p r)
-    (.setSpace t "preserve")
-    (.setValue t text)))
+    (assoc doc :r r)))
 
 (defn add-bold-italic-text
-  [p text]
+  [doc]
   (let [r (.createR factory)
+        p (:p doc)
         rpr (.createRPr factory)
-        t (.createText factory)
         b (new org.docx4j.wml.BooleanDefaultTrue)]
     (.setVal b true)
     (.setB rpr b)
     (.setI rpr b)
-    (.setRPr r rpr)
-    (add-to r t)
     (add-to p r)
-    (.setSpace t "preserve")
-    (.setValue t text)))
+    (assoc doc :r r)))
 
 (defn add-text-align
-  [p align]
-  (let [ppr (or (.getPPr p) (.createPPr factory))
+  [doc align]
+  (let [ppr (:ppr doc)
         jc (.createJc factory)]
     (.setVal jc (align alignment))
     (.setJc ppr jc)
-    (.setPPr p ppr)))
+    doc))
 
 (defn add-text
-  [p text]
+  [doc text]
   (let [t (.createText factory)
-        r (.createR factory)]
+        r (or (:r doc) (.createR factory))]
+    (when (nil? (:r doc))
+      (add-to (:p doc) r))
     (add-to r t)
-    (add-to p r)
     (.setSpace t "preserve")
     (.setValue t text)))
 
 (defn add-paragraph
-  [maindoc]
-  (let [p (.createP factory)
+  [doc]
+  (let [maindoc (:maindoc doc)
+        p (.createP factory)
         ppr (.createPPr factory)]
     (.setPPr p ppr)
     (-> maindoc
@@ -201,7 +204,7 @@
         (.getBody)
         (.getContent)
         (.add p))
-    p))
+    (assoc doc :p p :ppr ppr)))
 
 (defn add-pagenumber-field
   [p]
