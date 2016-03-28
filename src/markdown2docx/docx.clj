@@ -5,7 +5,7 @@
            [org.docx4j.jaxb Context]
            [org.docx4j.openpackaging.parts.WordprocessingML NumberingDefinitionsPart FooterPart]
            [org.docx4j.wml Numbering P TcPr TblWidth TblPr CTBorder STBorder TblBorders
-            JcEnumeration]
+            JcEnumeration Br STBrType]
            [org.docx4j.wml.PPrBase.NumPr]
            [java.math BigInteger]))
 
@@ -47,6 +47,15 @@
   [ndp]
   (fn [_]
     (.restart ndp 1 0 1)))
+
+(defn add-page-break
+  [doc]
+  (let [p (:p doc)
+        r (.createR factory)
+        br (.createBr factory)]
+    (add-to p r)
+    (add-to r br)
+    (.setType br STBrType/PAGE)))
 
 (defn set-border
   [border]

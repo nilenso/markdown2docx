@@ -164,6 +164,10 @@
     (doseq [child content]
       ((visit child) new-doc traversed css-map))))
 
+(defn page-break
+  [content doc parent css-map]
+  (docx/add-page-break doc))
+
 (defn hard-line-break
   [content doc parent css-map]
   (let [traversed (conj parent :hard-line-break)]
@@ -198,10 +202,7 @@
 
 (defn text
   [content doc parent css-map]
-  (println parent)
-  (docx/add-text (apply-css doc content css-map) (remove-css-element content))
-  ;; (docx/add-text doc content)
-  )
+  (docx/add-text (apply-css doc content css-map) (remove-css-element content)))
 
 (defn visit
   [element]
@@ -219,6 +220,7 @@
       :ordered-list (partial ordered-list value)
       :bullet-list (partial bullet-list value)
       :list-item (partial list-item value)
+      :page-break (partial page-break value)
       :hard-line-break (partial hard-line-break value)
       :thematic-break (partial thematic-break value)
       :soft-line-break (partial soft-line-break value)
