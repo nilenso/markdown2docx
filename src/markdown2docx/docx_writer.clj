@@ -71,8 +71,8 @@
 
 (defn reset-list
   [ndp]
-  ;; (when (= 0 @ilvl)
-    ;; (swap! numid (docx/restart-numbering ndp)))
+  (when (= 0 @ilvl)
+    (swap! numid inc))
   (swap! ilvl dec))
 
 (defn document

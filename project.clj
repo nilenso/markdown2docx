@@ -7,5 +7,5 @@
                  [org.docx4j/docx4j   "3.2.2"]
                  [net.sourceforge.cssparser/cssparser "0.9.18"]
                  [org.w3c.css/sac "1.3"]
-                 [markdown2clj "0.1.1-SNAPSHOT"]]
+                 [markdown2clj "0.1.2-SNAPSHOT"]]
   :main markdown2docx.core)
