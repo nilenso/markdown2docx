@@ -76,13 +76,13 @@
   (swap! ilvl dec))
 
 (defn document
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [traversed (conj parent :document)]
     (doseq [child content]
-     ((visit child) doc traversed css-map))))
+     ((visit child) doc traversed css-map (.indexOf content child)))))
 
 (defn heading
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [lvl (-> content
                 first
                 :level)
@@ -90,118 +90,121 @@
         traversed (conj parent :heading)]
     (docx/add-style-heading new-doc lvl)
     (doseq [child  (rest content)]
-      ((visit child) new-doc traversed css-map))))
+      ((visit child) new-doc traversed css-map (.indexOf content child)))))
 
 (defn paragraph
-  [content doc parent css-map]
-  (let [new-doc (if (= :list-item (first parent))
+  [content doc parent css-map child-num]
+  (let [new-doc (if (and (= :list-item (first parent)) (= 0 child-num))
                   doc
                   (docx/add-paragraph doc))
         traversed (conj parent :paragraph)]
+    (when (and (= :list-item (first parent)) (not= 0 child-num))
+      (docx/indent-paragraph new-doc @ilvl))
     (doseq [child content]
-      ((visit child) new-doc traversed css-map))))
+      ((visit child) new-doc traversed css-map (.indexOf content child)))))
 
 (defn table
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [new-doc (docx/add-table doc)
         traversed (conj parent :table)]
     (doseq [child content]
-      ((visit child) new-doc traversed css-map))))
+      ((visit child) new-doc traversed css-map (.indexOf content child)))))
 
 (defn table-head
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [traversed (conj parent :table-head)]
     (doseq [child content]
-      ((visit child) doc traversed css-map))))
+      ((visit child) doc traversed css-map (.indexOf content child)))))
 
 (defn table-body
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [traversed (conj parent :table-body)]
     (doseq [child content]
-      ((visit child) doc traversed css-map))))
+      ((visit child) doc traversed css-map (.indexOf content child)))))
 
 (defn table-row
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [new-doc (docx/add-table-row doc)
         traversed (conj parent :table-row)]
     (doseq [child content]
-      ((visit child) new-doc traversed css-map))))
+      ((visit child) new-doc traversed css-map (.indexOf content child)))))
 
 (defn table-cell
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [new-doc (docx/add-table-cell doc)
         traversed (conj parent :table-cell)]
     (doseq [child content]
-      ((visit child) new-doc traversed css-map))))
+      ((visit child) new-doc traversed css-map (.indexOf content child)))))
 
 (defn ordered-list
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [new-doc (docx/add-ordered-list doc)
         traversed (conj parent :ordered-list)]
     (swap! ilvl inc)
     (doseq [child content]
-      ((visit child) new-doc traversed css-map))
+      ((visit child) new-doc traversed css-map (.indexOf content child)))
     (reset-list (:ndp new-doc))))
 
 (defn bullet-list
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [traversed (conj parent :bullet-list)]
     (doseq [child content]
-      ((visit child) doc traversed css-map))))
+      ((visit child) doc traversed css-map (.indexOf content child)))))
 
 (defn list-item
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [new-doc (docx/add-paragraph doc)
         traversed (conj parent :list-item)]
     (docx/add-text-list new-doc @numid @ilvl)
     (doseq [child content]
-      ((visit child) new-doc traversed css-map))))
+      ((visit child) new-doc traversed css-map (.indexOf content child)))))
 
 (defn indented-code-block
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [new-doc (docx/add-paragraph doc)
         traversed (conj parent :indented-code-block)]
     (doseq [child content]
-      ((visit child) new-doc traversed css-map))))
+      ((visit child) new-doc traversed css-map (.indexOf content child)))))
+
+(defn page-break
+  [content doc parent css-map child-num]
+  (docx/add-page-break doc))
 
 (defn hard-line-break
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [traversed (conj parent :hard-line-break)]
     (doseq [child content]
-      ((visit child) doc traversed css-map))))
+      ((visit child) doc traversed css-map (.indexOf content child)))))
 
 (defn thematic-break
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [traversed (conj parent :thematic-break)]
-   (doseq [child content]
-     ((visit child) doc traversed css-map))))
+    (doseq [child content]
+     ((visit child) doc traversed css-map (.indexOf content child)))))
 
 (defn soft-line-break
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [traversed (conj parent :soft-line-break)]
     (doseq [child content]
-      ((visit child) doc traversed css-map))))
+      ((visit child) doc traversed css-map (.indexOf content child)))))
 
 (defn bold
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [new-doc (docx/set-emphasis-text doc :bold)
         traversed (conj parent :bold)]
     (doseq [child content]
-      ((visit child) new-doc traversed css-map))))
+      ((visit child) new-doc traversed css-map (.indexOf content child)))))
 
 (defn italic
-  [content doc parent css-map]
+  [content doc parent css-map child-num]
   (let [new-doc (docx/set-emphasis-text doc :italic)
         traversed (conj parent :italic)]
     (doseq [child content]
-      ((visit child) new-doc traversed css-map))))
+      ((visit child) new-doc traversed css-map (.indexOf content child)))))
 
 (defn text
-  [content doc parent css-map]
-  (println parent)
-  (docx/add-text (apply-css doc content css-map) (remove-css-element content))
-  ;; (docx/add-text doc content)
-  )
+  [content doc parent css-map child-num]
+  (docx/add-text (apply-css doc content css-map) (remove-css-element content)))
 
 (defn visit
   [element]
@@ -219,6 +222,7 @@
       :ordered-list (partial ordered-list value)
       :bullet-list (partial bullet-list value)
       :list-item (partial list-item value)
+      :page-break (partial page-break value)
       :hard-line-break (partial hard-line-break value)
       :thematic-break (partial thematic-break value)
       :soft-line-break (partial soft-line-break value)
@@ -230,7 +234,7 @@
 (defn build-docx
   [maindoc document-map css-map]
   (let [root-node '(:package)]
-    ((visit document-map) {:maindoc maindoc} root-node css-map)))
+    ((visit document-map) {:maindoc maindoc} root-node css-map 1)))
 
 (defn write
   [docx-file document-map css-map]

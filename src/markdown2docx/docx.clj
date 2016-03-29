@@ -5,10 +5,12 @@
            [org.docx4j.jaxb Context]
            [org.docx4j.openpackaging.parts.WordprocessingML NumberingDefinitionsPart FooterPart]
            [org.docx4j.wml Numbering P TcPr TblWidth TblPr CTBorder STBorder TblBorders
-            JcEnumeration]
+            JcEnumeration Br STBrType]
            [org.docx4j.wml.PPrBase.NumPr]
            [java.math BigInteger]))
 
+(def msword-standard-indent 720)
+(def msword-standard-cell-width 5500)
 
 (defonce factory (Context/getWmlObjectFactory))
 (defonce initialNumbering (slurp "initialNumbering.xml"))
@@ -47,6 +49,15 @@
   [ndp]
   (fn [_]
     (.restart ndp 1 0 1)))
+
+(defn add-page-break
+  [doc]
+  (let [p (:p doc)
+        r (.createR factory)
+        br (.createBr factory)]
+    (add-to p r)
+    (add-to r br)
+    (.setType br STBrType/PAGE)))
 
 (defn set-border
   [border]
@@ -97,7 +108,7 @@
     (.setRPr r rpr)
     (add-to p r)
     (add-to cell p)
-    (set-cell-width cell 5500)
+    (set-cell-width cell msword-standard-cell-width)
     (add-to row cell)
     (assoc doc :p p :r r :rpr rpr :ppr ppr)))
 
@@ -192,6 +203,17 @@
     (add-to r t)
     (.setSpace t "preserve")
     (.setValue t text)))
+
+(defn indent-paragraph
+  [doc ilvl]
+  (let [p (:p doc)
+        ppr (:ppr doc)
+        ind (.createPPrBaseInd factory)
+        indent-amount (if (= ilvl 0)
+                        msword-standard-indent
+                        (* msword-standard-indent ilvl))]
+    (.setLeft ind (BigInteger/valueOf indent-amount))
+    (.setInd ppr ind)))
 
 (defn add-paragraph
   [doc]
