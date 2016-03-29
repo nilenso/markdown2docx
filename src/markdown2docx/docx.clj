@@ -202,6 +202,17 @@
     (.setSpace t "preserve")
     (.setValue t text)))
 
+(defn indent-paragraph
+  [doc ilvl]
+  (let [p (:p doc)
+        ppr (:ppr doc)
+        ind (.createPPrBaseInd factory)
+        indent-amount (if (= ilvl 0)
+                        720
+                        (* 720 ilvl))]
+    (.setLeft ind (BigInteger/valueOf indent-amount))
+    (.setInd ppr ind)))
+
 (defn add-paragraph
   [doc]
   (let [maindoc (:maindoc doc)
