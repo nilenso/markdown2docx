@@ -9,6 +9,8 @@
            [org.docx4j.wml.PPrBase.NumPr]
            [java.math BigInteger]))
 
+(def msword-standard-indent 720)
+(def msword-standard-cell-width 5500)
 
 (defonce factory (Context/getWmlObjectFactory))
 (defonce initialNumbering (slurp "initialNumbering.xml"))
@@ -106,7 +108,7 @@
     (.setRPr r rpr)
     (add-to p r)
     (add-to cell p)
-    (set-cell-width cell 5500)
+    (set-cell-width cell msword-standard-cell-width)
     (add-to row cell)
     (assoc doc :p p :r r :rpr rpr :ppr ppr)))
 
@@ -208,8 +210,8 @@
         ppr (:ppr doc)
         ind (.createPPrBaseInd factory)
         indent-amount (if (= ilvl 0)
-                        720
-                        (* 720 ilvl))]
+                        msword-standard-indent
+                        (* msword-standard-indent ilvl))]
     (.setLeft ind (BigInteger/valueOf indent-amount))
     (.setInd ppr ind)))
 
