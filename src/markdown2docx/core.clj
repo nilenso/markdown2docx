@@ -5,7 +5,7 @@
 
 (defn -main [& [md-file docx-file css-file]]
   (let [md-string (slurp md-file)
-        md-map (md/parse md-string true)
+        md-map (md/parse md-string :parse-tabbed-tables)
         css-string (if (not (nil? css-file))
                      (slurp css-file)
                      "")
